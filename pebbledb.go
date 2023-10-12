@@ -236,8 +236,7 @@ func (db *PebbleDB) NewBatch() Batch {
 	return newPebbleDBBatch(db)
 }
 
-// Iterator implements DB.
-func (db *PebbleDB) Iterator(start, end []byte) (Iterator, error) {
+func (db *PebbleDB) newIter(start, end []byte) (*pebble.Iterator, error) {
 	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
 		return nil, errKeyEmpty
 	}
@@ -248,6 +247,17 @@ func (db *PebbleDB) Iterator(start, end []byte) (Iterator, error) {
 	}
 
 	itr := db.db.NewIter(&o)
+
+	return itr, nil
+}
+
+// Iterator implements DB.
+func (db *PebbleDB) Iterator(start, end []byte) (Iterator, error) {
+	itr, err := db.newIter(start, end)
+	if err != nil {
+		return nil, err
+	}
+
 	itr.First()
 
 	return newPebbleDBIterator(itr, start, end, false), nil
@@ -255,16 +265,11 @@ func (db *PebbleDB) Iterator(start, end []byte) (Iterator, error) {
 
 // ReverseIterator implements DB.
 func (db *PebbleDB) ReverseIterator(start, end []byte) (Iterator, error) {
-	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
-		return nil, errKeyEmpty
+	itr, err := db.newIter(start, end)
+	if err != nil {
+		return nil, err
 	}
 
-	o := pebble.IterOptions{
-		LowerBound: start,
-		UpperBound: end,
-	}
-
-	itr := db.db.NewIter(&o)
 	itr.Last()
 
 	return newPebbleDBIterator(itr, start, end, true), nil
