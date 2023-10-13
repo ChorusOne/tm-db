@@ -10,44 +10,25 @@ import (
 	"github.com/cockroachdb/pebble"
 )
 
-// PebbleDbForceSync
-/*
-This is set at compile time. Could be 0 or 1, defaults is 0.
-It will force using Sync for NoSync functions (Set, Delete, Write)
-
-Used as a workaround for chain-upgrade issue: At the upgrade-block, the sdk will panic without flushing data to disk or
-closing dbs properly.
-
-Upgrade guide:
-	1. After seeing `UPGRADE "xxxx" NEED at height....`, restart current version with `-X github.com/tendermint/tm-db.PebbleDbForceSync=1`
-	2. Restart new version as normal
-
-
-Example: Upgrading sifchain from v0.14.0 to v0.15.0
-
-# log:
-panic: UPGRADE "0.15.0" NEEDED at height: 8170210: {"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/v0.15.0/sifnoded-v0.15.0-linux-amd64.zip?checksum=0c03b5846c5a13dcc0d9d3127e4f0cee0aeddcf2165177b2f2e0d60dbcf1a5ea"}}
-
-# step1
-git reset --hard
-git checkout v0.14.0
-go mod edit -replace github.com/tendermint/tm-db=github.com/baabeetaa/tm-db@pebble
-go mod tidy
-go install -tags pebbledb -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.DBBackend=pebbledb -X github.com/tendermint/tm-db.PebbleDbForceSync=1" ./cmd/sifnoded
-
-$HOME/go/bin/sifnoded start --db_backend=pebbledb
-
-
-# step 2
-git reset --hard
-git checkout v0.15.0
-go mod edit -replace github.com/tendermint/tm-db=github.com/baabeetaa/tm-db@pebble
-go mod tidy
-go install -tags pebbledb -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.DBBackend=pebbledb" ./cmd/sifnoded
-
-$HOME/go/bin/sifnoded start --db_backend=pebbledb
-
-*/
+// PebbleDbForceSync is a flag to force using Sync for some PebbleDB functions.
+// It should be set at compile time to have effect.
+//
+// How to use it:
+//
+//   go mod edit -replace=github.com/tendermint/tm-db=github.com/ChorusOne/tm-db@$v0.1.5-pebbledb
+//   go mod tidy
+//
+//   # For regular use
+//   make BUILD_TAGS=pebbledb LDFLAGS="-w -s -X github.com/cosmos/cosmos-sdk/types.DBBackend=pebbledb" install
+//
+//   # In case db is not flushed to disk
+//   make BUILD_TAGS=pebbledb LDFLAGS="-w -s -X github.com/cosmos/cosmos-sdk/types.DBBackend=pebbledb -X github.com/tendermint/tm-db.PebbleDbForceSync=1" install
+//
+//   <appd> start --db_backend=pebbledb
+//
+// When db cannot be flushed to disk caused by SDK panic,
+// PebbleDbForceSync should be used with the same version (the version
+// before the upgrade) to properly flush data to disk.
 var PebbleDbForceSync = "0"
 var isPebbleDbForceSync = false
 
