@@ -20,6 +20,10 @@ test-rocksdb:
 	@echo "--> Running go test"
 	@go test $(PACKAGES) -tags rocksdb -v
 
+test-pebbledb:
+	@echo "--> Running go test"
+	@go test $(PACKAGES) -tags pebbledb -v
+
 test-boltdb:
 	@echo "--> Running go test"
 	@go test $(PACKAGES) -tags boltdb -v
@@ -30,7 +34,7 @@ test-badgerdb:
 
 test-all:
 	@echo "--> Running go test"
-	@go test $(PACKAGES) -tags cleveldb,boltdb,rocksdb,badgerdb -v
+	@go test $(PACKAGES) -tags cleveldb,boltdb,rocksdb,pebbledb,badgerdb -v
 
 lint:
 	@echo "--> Running linter"
