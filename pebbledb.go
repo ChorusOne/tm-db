@@ -228,7 +228,10 @@ func (db *PebbleDB) newIter(start, end []byte) (*pebble.Iterator, error) {
 		UpperBound: end,
 	}
 
-	itr := db.db.NewIter(&o)
+	itr, err := db.db.NewIter(&o)
+	if err != nil {
+		return nil, err
+	}
 
 	return itr, nil
 }
